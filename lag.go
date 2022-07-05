@@ -1,4 +1,4 @@
-package main
+package ksak
 
 import (
 	"context"
@@ -129,7 +129,7 @@ func listOffsets(url string, topic string, groupid string) {
 	}
 }
 
-func main() {
+func runLag() {
 	topic := "drio_test_go"
 	url := "localhost:9092"
 	groupid := "drio-group-1"

@@ -1,4 +1,4 @@
-package main
+package ksak
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-func main() {
+func runGroups() {
 	conn, err := kafka.Dial("tcp", "localhost:9092")
 	if err != nil {
 		panic(err.Error())

@@ -1,4 +1,4 @@
-module drio/prometheus-exporter-kafka-lag-go
+module drio/ksak
 
 go 1.18
 
