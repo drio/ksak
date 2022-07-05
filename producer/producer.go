@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"math/rand"
@@ -14,10 +15,21 @@ import (
 )
 
 func main() {
+	topic := flag.String("topic", "", "kafka topic")
+	partition := flag.Int("partition", 0, "kafka partition")
+	url := flag.String("url", "localhost:9092", "kafka broker url")
+
+	flag.Parse()
+
+	if *topic == "" {
+		log.Fatal("please, provide a <topic>")
+	}
+
 	app := &App{
-		topic:     "drio_test_go",
-		url:       "localhost:9092",
-		partition: 0,
+		*topic,
+		*url,
+		*partition,
+		nil,
 	}
 	SetupCloseHandler()
 	app.Connect()

@@ -2,24 +2,45 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 
 	"github.com/segmentio/kafka-go"
 )
 
 func main() {
+	topic := flag.String("topic", "", "kafka topic")
+	groupId := flag.String("group-id", "", "kafka group id")
+	partition := flag.Int("partition", 0, "kafka partition")
+	url := flag.String("url", "localhost:9092", "kafka broker url")
+
+	flag.Parse()
+
+	if *topic == "" {
+		log.Fatal("please, provide a <topic>")
+	}
+
+	if *groupId == "" {
+		log.Fatal("please, provide a <group-id>")
+	}
+
 	app := &App{
-		topic:     "drio_test_go",
-		url:       "localhost:9092",
-		partition: 0,
-		groupId:   "drio-group-1",
-		reader:    nil,
+		*topic,
+		*url,
+		*partition,
+		*groupId,
+		nil,
 	}
 	app.StartReader()
 
-	if err := app.reader.Close(); err != nil {
-		log.Fatal("failed to close reader:", err)
-	}
+	defer func() {
+		if err := app.reader.Close(); err != nil {
+			log.Fatal("failed to close reader:", err)
+		}
+	}()
+
+	app.Loop()
+
 }
 
 type App struct {
