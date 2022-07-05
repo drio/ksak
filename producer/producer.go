@@ -44,7 +44,7 @@ func (a *App) Connect() {
 	if err != nil {
 		log.Fatal("failed to dial leader:", err)
 	}
-	conn.SetWriteDeadline(time.Now().Add(3 * time.Second))
+	//conn.SetWriteDeadline(time.Now().Add(3 * time.Second))
 	a.conn = conn
 }
 
