@@ -41,8 +41,8 @@ func produce(app *ksak.App) {
 }
 */
 
-func help() {
-	fmt.Println("Help here")
+func help(msg string) {
+	fmt.Printf("Help here: %s", msg)
 	os.Exit(0)
 }
 
@@ -59,7 +59,7 @@ func main() {
 	consumeGroupId := consumeCmd.String("group-id", "", "kafka topic group id")
 
 	if len(os.Args) == 1 {
-		help()
+		help("")
 	}
 
 	switch os.Args[1] {
@@ -73,22 +73,40 @@ func main() {
 	}
 
 	if produceCmd.Parsed() {
-		// TODO: checks
-		fmt.Printf("Produce!: %s %d %s \n", *produceTopic, *producePartition, *produceUrl)
-		app := &ksak.App{
+		if *produceTopic == "" {
+			// TODO
+			help("")
+		}
+
+		app := &ksak.SubCmdProduce{
 			Topic:     *produceTopic,
 			Url:       *produceUrl,
 			Partition: *producePartition,
-			GroupId:   "",
 			Conn:      nil,
-			Reader:    nil,
 		}
-		app.RunProduce()
+		app.Produce()
 	}
 
 	if consumeCmd.Parsed() {
-		// TODO: checks
-		fmt.Printf("consume!: %s %d %s %s\n", *consumeTopic, *consumePartition, *consumeUrl, *consumeGroupId)
+		if *consumeTopic == "" {
+			// TODO
+			help("Empty topic")
+		}
+
+		if *consumeGroupId == "" {
+			// TODO
+			help("Empty group-id")
+		}
+
+		app := &ksak.SubCmdConsume{
+			Topic:     *consumeTopic,
+			Url:       *consumeUrl,
+			Partition: *consumePartition,
+			GroupId:   *consumeGroupId,
+			Reader:    nil,
+		}
+		app.Consume()
+
 	}
 
 	/*

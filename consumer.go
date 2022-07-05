@@ -7,24 +7,32 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-func (a *App) Consume() {
-	a.startReader()
+type SubCmdConsume struct {
+	Topic     string
+	Url       string
+	Partition int
+	GroupId   string
+	Reader    *kafka.Reader
+}
+
+func (s *SubCmdConsume) Consume() {
+	s.startReader()
 
 	defer func() {
-		if err := a.Reader.Close(); err != nil {
+		if err := s.Reader.Close(); err != nil {
 			log.Fatal("failed to close reader:", err)
 		}
 	}()
 
-	a.loop()
+	s.loop()
 }
 
-func (a *App) startReader() {
-	a.Reader = kafka.NewReader(kafka.ReaderConfig{
-		Brokers:   []string{a.Url},
-		Topic:     a.Topic,
-		GroupID:   a.GroupId,
-		Partition: a.Partition,
+func (s *SubCmdConsume) startReader() {
+	s.Reader = kafka.NewReader(kafka.ReaderConfig{
+		Brokers:   []string{s.Url},
+		Topic:     s.Topic,
+		GroupID:   s.GroupId,
+		Partition: s.Partition,
 		MinBytes:  10e3, // 10KB
 		MaxBytes:  10e6, // 10MB
 	})
@@ -32,9 +40,9 @@ func (a *App) startReader() {
 	log.Println("Consumer started ...")
 }
 
-func (a *App) loop() {
+func (s *SubCmdConsume) loop() {
 	for {
-		m, err := a.Reader.ReadMessage(context.Background())
+		m, err := s.Reader.ReadMessage(context.Background())
 		if err != nil {
 			break
 		}
