@@ -8,39 +8,6 @@ import (
 	"os"
 )
 
-/*
-func produce(app *ksak.App) {
-	topic := flag.String("topic", "", "kafka topic")
-	partition := flag.Int("partition", 0, "kafka partition")
-	url := flag.String("url", "localhost:9092", "kafka broker url")
-	groupId := flag.String("group-id", "", "kafka topic group id")
-
-	flag.Parse()
-
-	if *topic == "" {
-		log.Fatal("please, provide a <topic>")
-	}
-
-	app := &App{
-		*topic,
-		*url,
-		*partition,
-		nil,
-	}
-	SetupCloseHandler()
-	app.Connect()
-	defer func() {
-		if err := app.conn.Close(); err != nil {
-			log.Fatal("failed to close writer:", err)
-		}
-	}()
-
-	var sleepBy time.Duration
-	sleepBy = 2
-	app.SendLoop(sleepBy)
-}
-*/
-
 func help(msg string) {
 	fmt.Printf("Help here: %s", msg)
 	os.Exit(0)
