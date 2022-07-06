@@ -2,37 +2,62 @@ package ksak
 
 import (
 	"context"
+	"flag"
 	"log"
 
 	"github.com/segmentio/kafka-go"
 )
 
-type SubCmdConsume struct {
-	Topic     string
-	Url       string
-	Partition int
-	GroupId   string
-	Reader    *kafka.Reader
+type ConsumeCommand struct {
+	fs *flag.FlagSet
+
+	name      string
+	topic     string
+	url       string
+	partition int
+	groupId   string
+	reader    *kafka.Reader
 }
 
-func (s *SubCmdConsume) Consume() {
-	s.startReader()
+func NewConsumeCommand() *ConsumeCommand {
+	gc := &ConsumeCommand{
+		fs: flag.NewFlagSet("consume", flag.ContinueOnError),
+	}
+
+	gc.fs.StringVar(&gc.topic, "topic", "", "kafka topic to consume from")
+	gc.fs.StringVar(&gc.groupId, "group-id", "", "group-id to use when consuming")
+
+	return gc
+}
+
+func (c *ConsumeCommand) Name() string {
+	return c.fs.Name()
+}
+
+func (c *ConsumeCommand) Init(args []string) error {
+	return c.fs.Parse(args)
+}
+
+func (c *ConsumeCommand) Run() error {
+	// TODO: check for mandatory arguments
+	c.startReader()
 
 	defer func() {
-		if err := s.Reader.Close(); err != nil {
+		if err := c.reader.Close(); err != nil {
 			log.Fatal("failed to close reader:", err)
 		}
 	}()
 
-	s.loop()
+	c.loop()
+	return nil
 }
 
-func (s *SubCmdConsume) startReader() {
-	s.Reader = kafka.NewReader(kafka.ReaderConfig{
-		Brokers:   []string{s.Url},
-		Topic:     s.Topic,
-		GroupID:   s.GroupId,
-		Partition: s.Partition,
+func (c *ConsumeCommand) startReader() {
+	c.reader = kafka.NewReader(kafka.ReaderConfig{
+		Brokers:   []string{c.url},
+		Topic:     c.topic,
+		GroupID:   c.groupId,
+		Partition: c.partition,
 		MinBytes:  10e3, // 10KB
 		MaxBytes:  10e6, // 10MB
 	})
@@ -40,9 +65,9 @@ func (s *SubCmdConsume) startReader() {
 	log.Println("Consumer started ...")
 }
 
-func (s *SubCmdConsume) loop() {
+func (c *ConsumeCommand) loop() {
 	for {
-		m, err := s.Reader.ReadMessage(context.Background())
+		m, err := c.reader.ReadMessage(context.Background())
 		if err != nil {
 			break
 		}

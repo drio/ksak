@@ -38,15 +38,11 @@ func (p *ProduceCommand) Init(args []string) error {
 }
 
 func (p *ProduceCommand) Run() error {
-	p.Produce()
-	return nil
-}
-
-func (s *ProduceCommand) Produce() {
+	// TODO: check for mandatory arguments
 	SetupCloseHandler()
-	s.Connect()
+	p.Connect()
 	defer func() {
-		if err := s.conn.Close(); err != nil {
+		if err := p.conn.Close(); err != nil {
 			log.Fatal("failed to close writer:", err)
 		}
 	}()
@@ -54,24 +50,25 @@ func (s *ProduceCommand) Produce() {
 	var sleepBy time.Duration
 	// FIXME: cmd option
 	sleepBy = 2
-	s.SendLoop(sleepBy)
+	p.SendLoop(sleepBy)
+	return nil
 }
 
-func (s *ProduceCommand) Connect() {
-	conn, err := kafka.DialLeader(context.Background(), "tcp", s.url, s.topic, s.partition)
+func (p *ProduceCommand) Connect() {
+	conn, err := kafka.DialLeader(context.Background(), "tcp", p.url, p.topic, p.partition)
 	if err != nil {
 		log.Fatal("failed to dial leader:", err)
 	}
 	//conn.SetWriteDeadline(time.Now().Add(3 * time.Second))
-	s.conn = conn
+	p.conn = conn
 }
 
-func (s *ProduceCommand) SendLoop(sleepSecs time.Duration) {
+func (p *ProduceCommand) SendLoop(sleepSecs time.Duration) {
 	for {
 		// FIXME: command option
 		r := fmt.Sprintf("%d", GenRandomInt(1000))
 		log.Printf("Sending %s", r)
-		_, err := s.conn.WriteMessages(
+		_, err := p.conn.WriteMessages(
 			kafka.Message{Value: []byte(r)},
 		)
 		if err != nil {
