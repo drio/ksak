@@ -9,7 +9,7 @@ import (
 )
 
 func help(msg string) {
-	fmt.Printf("Help here: %s", msg)
+	fmt.Printf("ksak: Kafka swiss army knife: %s\n", msg)
 	os.Exit(0)
 }
 
@@ -25,7 +25,7 @@ func main() {
 	consumeUrl := consumeCmd.String("url", "localhost:9092", "kafka broker url")
 	consumeGroupId := consumeCmd.String("group-id", "", "kafka topic group id")
 
-	if len(os.Args) == 1 {
+	if len(os.Args) < 2 {
 		help("")
 	}
 
@@ -41,8 +41,7 @@ func main() {
 
 	if produceCmd.Parsed() {
 		if *produceTopic == "" {
-			// TODO
-			help("")
+			help("Need topic to be able to produce")
 		}
 
 		app := &ksak.SubCmdProduce{
@@ -57,12 +56,12 @@ func main() {
 	if consumeCmd.Parsed() {
 		if *consumeTopic == "" {
 			// TODO
-			help("Empty topic")
+			help("Need topic to consume")
 		}
 
 		if *consumeGroupId == "" {
 			// TODO
-			help("Empty group-id")
+			help("Need group-id to consume")
 		}
 
 		app := &ksak.SubCmdConsume{
@@ -80,7 +79,5 @@ func main() {
 		if *topic == "" {
 			log.Fatal("please, provide a <topic>")
 		}
-
-
 	*/
 }
