@@ -36,7 +36,7 @@ func (l *LagCommand) Init(args []string) error {
 }
 
 func (l *LagCommand) Run() error {
-	fmt.Println("lag time!")
-	listOffsets(l.url, l.topic, l.groupId)
+	les := getLag(l.url, l.topic, l.groupId)
+	fmt.Printf("%+v", les[0])
 	return nil
 }

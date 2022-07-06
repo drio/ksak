@@ -2,7 +2,6 @@ package ksak
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 	"sort"
@@ -11,6 +10,15 @@ import (
 
 	"github.com/segmentio/kafka-go"
 )
+
+type lagEntry struct {
+	partition int
+	committed int
+	last      int
+	lag       int
+	topic     string
+	groupId   string
+}
 
 func getPartitionsForTopic(url string, topic string) ([]int, error) {
 	conn, err := kafka.DialLeader(context.Background(), "tcp", url, topic, 0)
@@ -55,11 +63,11 @@ func newClient(addr net.Addr) (*kafka.Client, func()) {
 	return client, func() { transport.CloseIdleConnections(); conns.Wait() }
 }
 
-func listOffsets(url, topic, groupid string) {
+func getLag(url, topic, groupid string) []lagEntry {
 	partitions, err := getPartitionsForTopic(url, topic)
 	if err != nil {
 		log.Printf("error getting partitions for topic: %v, error is: %v\n", topic, err)
-		return
+		return nil
 	}
 	client, shutdown := newClient(kafka.TCP(url))
 	defer shutdown()
@@ -73,7 +81,7 @@ func listOffsets(url, topic, groupid string) {
 	})
 	if err != nil {
 		log.Printf("error fetching offsets for topic: %v, error is: %v\n", topic, err)
-		return
+		return nil
 	}
 	type offsetInfo = struct {
 		committed int
@@ -99,12 +107,12 @@ func listOffsets(url, topic, groupid string) {
 	})
 	if err != nil {
 		log.Printf("error listing offsets for topic: %v, error is: %v\n", url, err)
-		return
+		return nil
 	}
 	partitionOffsets, ok := res.Topics[topic]
 	if !ok {
 		log.Printf("error getting partition offsets for topic: %v, error is: %v\n", url, err)
-		return
+		return nil
 	}
 
 	// combine committed and last into final
@@ -121,10 +129,16 @@ func listOffsets(url, topic, groupid string) {
 		keys = append(keys, k)
 	}
 	sort.Ints(keys)
-	fmt.Printf("Listing offsets for topic: %v\n\n", topic)
-	format := "%-20v%-20v%-20v\n"
-	fmt.Printf(format, "Partition", "CommittedOffset", "LastOffset")
+	les := []lagEntry{}
 	for _, k := range keys {
-		fmt.Printf(format, k, final[k].committed, final[k].last)
+		les = append(les, lagEntry{
+			partition: k,
+			committed: final[k].committed,
+			last:      final[k].last,
+			lag:       final[k].last - final[k].committed,
+			topic:     topic,
+			groupId:   groupid,
+		})
 	}
+	return les
 }
