@@ -26,7 +26,7 @@ func main() {
 	consumeGroupId := consumeCmd.String("group-id", "", "kafka topic group id")
 
 	if len(os.Args) < 2 {
-		help("")
+		help("You did not provide a subcommand")
 	}
 
 	switch os.Args[1] {
