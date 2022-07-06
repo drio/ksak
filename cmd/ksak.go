@@ -27,6 +27,7 @@ func root(args []string) error {
 	cmds := []Runner{
 		ksak.NewProduceCommand(),
 		ksak.NewConsumeCommand(),
+		ksak.NewListGroupsCommand(),
 	}
 
 	subcommand := os.Args[1]
