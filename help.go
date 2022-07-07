@@ -35,6 +35,9 @@ func (l *HelpCommand) Run() error {
 func PrintHelp() {
 	fmt.Printf(`🔪 ksak (Kafka Swiss Army Knife)
 
+  Usage:
+    ksak <command> [flags]
+
   [help]: show help.
 
   [produce]: produce random integers to topic.
