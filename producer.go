@@ -4,10 +4,14 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/segmentio/kafka-go"
 	"log"
+	"os"
 	"time"
+
+	"github.com/segmentio/kafka-go"
 )
+
+const produceDefaultsPartition = 0
 
 type ProduceCommand struct {
 	fs *flag.FlagSet
@@ -25,6 +29,8 @@ func NewProduceCommand() *ProduceCommand {
 	}
 
 	gc.fs.StringVar(&gc.topic, "topic", "", "kafka topic")
+	gc.fs.StringVar(&gc.url, "url", "", "kafka broker url")
+	gc.fs.IntVar(&gc.partition, "partition", produceDefaultsPartition, "kafka broker url")
 
 	return gc
 }
@@ -38,7 +44,16 @@ func (p *ProduceCommand) Init(args []string) error {
 }
 
 func (p *ProduceCommand) Run() error {
-	// TODO: check for mandatory arguments
+	if p.topic == "" {
+		fmt.Println("No kafka topic name provided.")
+		os.Exit(2)
+	}
+
+	if p.url == "" {
+		fmt.Println("No kafka broker url provided")
+		os.Exit(2)
+	}
+
 	SetupCloseHandler()
 	p.Connect()
 	defer func() {

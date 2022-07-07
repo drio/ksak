@@ -3,6 +3,7 @@ package ksak
 import (
 	"flag"
 	"fmt"
+	"os"
 	//"github.com/segmentio/kafka-go"
 )
 
@@ -36,6 +37,21 @@ func (l *LagCommand) Init(args []string) error {
 }
 
 func (l *LagCommand) Run() error {
+	if l.topic == "" {
+		fmt.Println("No kafka topic name provided.")
+		os.Exit(2)
+	}
+
+	if l.url == "" {
+		fmt.Println("No kafka broker url")
+		os.Exit(2)
+	}
+
+	if l.groupId == "" {
+		fmt.Println("No kafka topic group id provided.")
+		os.Exit(2)
+	}
+
 	les, err := getLag(l.url, l.topic, l.groupId)
 	if err != nil {
 		return err

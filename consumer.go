@@ -3,7 +3,9 @@ package ksak
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -25,7 +27,8 @@ func NewConsumeCommand() *ConsumeCommand {
 	}
 
 	gc.fs.StringVar(&gc.topic, "topic", "", "kafka topic to consume from")
-	gc.fs.StringVar(&gc.groupId, "group-id", "", "group-id to use when consuming")
+	gc.fs.StringVar(&gc.url, "url", "", "kafka broker url")
+	gc.fs.StringVar(&gc.groupId, "group-id", "", "kafka topic group-id to use")
 
 	return gc
 }
@@ -39,7 +42,21 @@ func (c *ConsumeCommand) Init(args []string) error {
 }
 
 func (c *ConsumeCommand) Run() error {
-	// TODO: check for mandatory arguments
+	if c.topic == "" {
+		fmt.Println("No kafka topic name provided.")
+		os.Exit(2)
+	}
+
+	if c.url == "" {
+		fmt.Println("No broker url")
+		os.Exit(2)
+	}
+
+	if c.groupId == "" {
+		fmt.Println("No group id provided.")
+		os.Exit(2)
+	}
+
 	c.startReader()
 
 	defer func() {
