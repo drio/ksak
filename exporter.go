@@ -7,11 +7,22 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
+
+const exporterDefaultInput = "/dev/stdin"
+const exporterDefaultSleep = 30
+const exporterDefaultPort = 8080
+
+type exporterCmdDefaults struct {
+	fName     string
+	sleepTime int
+	port      int
+}
 
 type ExporterCommand struct {
 	fs *flag.FlagSet
@@ -27,9 +38,9 @@ func NewExporterCommand() *ExporterCommand {
 		fs: flag.NewFlagSet("exporter", flag.ContinueOnError),
 	}
 
-	gc.fs.StringVar(&gc.fName, "input", "", "csv file name to proces")
-	gc.fs.IntVar(&gc.sleepTime, "sleep", 30, "Sleep time (in seconds) between lag updates")
-	gc.fs.IntVar(&gc.port, "port", 8080, "Server port number")
+	gc.fs.StringVar(&gc.fName, "input", exporterDefaultInput, "csv file name to proces")
+	gc.fs.IntVar(&gc.sleepTime, "sleep", exporterDefaultSleep, "Sleep time (in seconds) between lag updates")
+	gc.fs.IntVar(&gc.port, "port", exporterDefaultPort, "Server port number")
 	return gc
 }
 
@@ -48,13 +59,14 @@ func (l *ExporterCommand) Run() error {
 		fmt.Println("No input file name provided.")
 		os.Exit(2)
 	}
+	log.Printf("Reading from %s", l.fName)
+	log.Printf("Sleeping for %d seconds between lag updates", l.sleepTime)
 
 	listCsvEntries, err := readCsv(l.fName)
 	if err != nil {
 		log.Fatalf("Could not load csv: %s", err)
 	}
 	log.Printf("Loaded %d rows from csv", len(listCsvEntries))
-	log.Printf("Sleeping for %d seconds between lag updates", l.sleepTime)
 
 	go func() {
 		for {
@@ -146,9 +158,9 @@ func readCsv(fName string) ([]csvEntry, error) {
 	listEntries := []csvEntry{}
 	for _, entry := range records {
 		listEntries = append(listEntries, csvEntry{
-			url:     entry[0],
-			topic:   entry[1],
-			groupId: entry[2],
+			url:     strings.TrimSpace(entry[0]),
+			topic:   strings.TrimSpace(entry[1]),
+			groupId: strings.TrimSpace(entry[2]),
 		})
 	}
 

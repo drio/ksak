@@ -20,7 +20,7 @@ type Runner interface {
 
 func root(args []string) error {
 	if len(args) < 1 {
-		return errors.New("You must pass a sub-command")
+		return errors.New("You must pass a sub-command.\nUse subcommand help for details.")
 	}
 
 	cmds := []Runner{

@@ -50,7 +50,11 @@ func PrintHelp() {
     $ ksak list-groups
 
   [exporter]: start a prometheus exporter that exposes lag related metrics.
-    $ ksak exporter XXXXXXXXXXXXXXXXXXXXX
+    $ ksak exporter --input=%s --port=%d --sleep=%d
+    csv input format:
+    kafka broker url, kafka topic,  kafka group id
+    example:
+    localhost:9092, foo-bar-topic, group-id1
 
-`)
+`, exporterDefaultInput, exporterDefaultPort, exporterDefaultSleep)
 }
