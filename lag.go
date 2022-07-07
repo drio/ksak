@@ -36,7 +36,10 @@ func (l *LagCommand) Init(args []string) error {
 }
 
 func (l *LagCommand) Run() error {
-	les := getLag(l.url, l.topic, l.groupId)
+	les, err := getLag(l.url, l.topic, l.groupId)
+	if err != nil {
+		return err
+	}
 	fmt.Printf("%+v", les[0])
 	return nil
 }

@@ -2,6 +2,8 @@ package ksak
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"log"
 	"net"
 	"sort"
@@ -63,11 +65,10 @@ func newClient(addr net.Addr) (*kafka.Client, func()) {
 	return client, func() { transport.CloseIdleConnections(); conns.Wait() }
 }
 
-func getLag(url, topic, groupid string) []lagEntry {
+func getLag(url, topic, groupid string) ([]lagEntry, error) {
 	partitions, err := getPartitionsForTopic(url, topic)
 	if err != nil {
-		log.Printf("error getting partitions for topic: %v, error is: %v\n", topic, err)
-		return nil
+		return nil, errors.New(fmt.Sprintf("error getting partitions for topic: %v, error is: %v\n", topic, err))
 	}
 	client, shutdown := newClient(kafka.TCP(url))
 	defer shutdown()
@@ -80,8 +81,7 @@ func getLag(url, topic, groupid string) []lagEntry {
 		},
 	})
 	if err != nil {
-		log.Printf("error fetching offsets for topic: %v, error is: %v\n", topic, err)
-		return nil
+		return nil, errors.New(fmt.Sprintf("error fetching offsets for topic: %v, error is: %v\n", topic, err))
 	}
 	type offsetInfo = struct {
 		committed int
@@ -106,13 +106,11 @@ func getLag(url, topic, groupid string) []lagEntry {
 		},
 	})
 	if err != nil {
-		log.Printf("error listing offsets for topic: %v, error is: %v\n", url, err)
-		return nil
+		return nil, errors.New(fmt.Sprintf("error listing offsets for topic: %v, error is: %v\n", url, err))
 	}
 	partitionOffsets, ok := res.Topics[topic]
 	if !ok {
-		log.Printf("error getting partition offsets for topic: %v, error is: %v\n", url, err)
-		return nil
+		return nil, errors.New(fmt.Sprintf("error getting partition offsets for topic: %v, error is: %v\n", url, err))
 	}
 
 	// combine committed and last into final
@@ -140,5 +138,5 @@ func getLag(url, topic, groupid string) []lagEntry {
 			groupId:   groupid,
 		})
 	}
-	return les
+	return les, nil
 }
