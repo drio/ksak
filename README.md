@@ -49,7 +49,7 @@ $ echo -ne "localhost:9092, github_topic, gh-gid-1" | ./ksak exporter
 Then we can check the metric with:
 
 $ curl -s localhost:8080/metrics | grep ksak | grep -v "#"
-ksak_space_ksa_sub_ksak_kafka_lag{groupid="gh-gid-1",host="localhost:9092",partition="0",topic="github_topic"} 12 
+ksak_kafka_lag{groupid="gh-gid-1",host="localhost:9092",partition="0",topic="github_topic"} 4
 ```
 
 ![](images/term.png)

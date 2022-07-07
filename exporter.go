@@ -91,10 +91,8 @@ func (l *ExporterCommand) Run() error {
 func registerGauge() *prometheus.GaugeVec {
 	gaugeLag := prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Namespace: "ksak_space",
-			Subsystem: "ksa_sub",
-			Name:      "ksak_kafka_lag",
-			Help:      "lag metrics on kafka topics.",
+			Name: "ksak_kafka_lag",
+			Help: "lag metrics on kafka topics.",
 		},
 		[]string{
 			"topic",
