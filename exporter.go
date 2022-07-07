@@ -16,13 +16,20 @@ import (
 type ExporterCommand struct {
 	fs *flag.FlagSet
 
-	name string
+	name      string
+	fName     string
+	sleepTime int
+	port      int
 }
 
 func NewExporterCommand() *ExporterCommand {
 	gc := &ExporterCommand{
 		fs: flag.NewFlagSet("exporter", flag.ContinueOnError),
 	}
+
+	gc.fs.StringVar(&gc.fName, "input", "", "csv file name to proces")
+	gc.fs.IntVar(&gc.sleepTime, "sleep", 30, "Sleep time (in seconds) between lag updates")
+	gc.fs.IntVar(&gc.port, "port", 8080, "Server port number")
 	return gc
 }
 
@@ -37,10 +44,17 @@ func (l *ExporterCommand) Init(args []string) error {
 func (l *ExporterCommand) Run() error {
 	gaugeLag := registerGauge()
 
-	listCsvEntries, err := readCsv()
+	if l.fName == "" {
+		fmt.Println("No input file name provided.")
+		os.Exit(2)
+	}
+
+	listCsvEntries, err := readCsv(l.fName)
 	if err != nil {
 		log.Fatalf("Could not load csv: %s", err)
 	}
+	log.Printf("Loaded %d rows from csv", len(listCsvEntries))
+	log.Printf("Sleeping for %d seconds between lag updates", l.sleepTime)
 
 	go func() {
 		for {
@@ -51,14 +65,14 @@ func (l *ExporterCommand) Run() error {
 			} else {
 				updateGauge(gaugeLag, listCsvEntries, listLags)
 			}
-			// TODO: dynamic
-			time.Sleep(10 * time.Second)
+			log.Printf("Sleeping update gauge goroutine for %d seconds", l.sleepTime)
+			time.Sleep(time.Duration(l.sleepTime) * time.Second)
 		}
 	}()
 
 	http.Handle("/metrics", promhttp.Handler())
-	log.Println("Listening on port 8080")
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", 8080), nil))
+	log.Printf("Listening on port %d", l.port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", l.port), nil))
 	return nil
 }
 
@@ -117,8 +131,8 @@ func getAllLags(listCsvEntries []csvEntry) ([][]lagEntry, error) {
 	return lagEntriesPerCsvRow, nil
 }
 
-func readCsv() ([]csvEntry, error) {
-	file, err := os.Open("/dev/stdin")
+func readCsv(fName string) ([]csvEntry, error) {
+	file, err := os.Open(fName)
 	if err != nil {
 		return nil, err
 	}

@@ -50,7 +50,7 @@ func PrintHelp() {
     $ ksak list-groups
 
   [exporter]: start a prometheus exporter that exposes lag related metrics.
-    $ ksak exporter --topic=foo-bar --url=localhost:9092 --group-id=drio1
+    $ ksak exporter XXXXXXXXXXXXXXXXXXXXX
 
 `)
 }
