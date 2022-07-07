@@ -35,41 +35,24 @@ func (l *ExporterCommand) Init(args []string) error {
 }
 
 func (l *ExporterCommand) Run() error {
-	/*
-				  TODO:
-		        - Read list of csv: (url, topic, groupid) from stdin
-		        - Every x seconds:
-		          per each entry:
-		            - get the latest lag and update the gauge (use labels)
-	*/
+	gaugeLag := registerGauge()
 
-	gaugeLag := prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Namespace: "namesp_Foo",
-			Subsystem: "sub_Bar",
-			Name:      "ksak_kafka_alg",
-			Help:      "lag metrics on kafka topics.",
-		},
-		[]string{
-			"topic",
-			"groupid",
-			"host",
-		},
-	)
-	prometheus.MustRegister(gaugeLag)
-
-	gaugeLag.WithLabelValues("foo_bar", "gid_12", "localhost_9092").Add(123)
-	//gaugeLag.With(prometheus.Labels{"type": "delete", "user": "alice"}).Inc()
-
-	listEntries, err := readCsv()
+	listCsvEntries, err := readCsv()
 	if err != nil {
 		log.Fatalf("Could not load csv: %s", err)
 	}
-	fmt.Printf("%v ", listEntries)
 
 	go func() {
 		for {
-			time.Sleep(2 * time.Second)
+			log.Printf("Updating gauge")
+			listLags, err := getAllLags(listCsvEntries)
+			if err != nil {
+				log.Printf("Error getting lags: %s", err)
+			} else {
+				updateGauge(gaugeLag, listCsvEntries, listLags)
+			}
+			// TODO: dynamic
+			time.Sleep(10 * time.Second)
 		}
 	}()
 
@@ -79,10 +62,59 @@ func (l *ExporterCommand) Run() error {
 	return nil
 }
 
+func registerGauge() *prometheus.GaugeVec {
+	gaugeLag := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: "ksak_space",
+			Subsystem: "ksa_sub",
+			Name:      "ksak_kafka_lag",
+			Help:      "lag metrics on kafka topics.",
+		},
+		[]string{
+			"topic",
+			"groupid",
+			"host",
+			"partition",
+		},
+	)
+	prometheus.MustRegister(gaugeLag)
+	return gaugeLag
+}
+
 type csvEntry struct {
 	url     string
 	topic   string
 	groupId string
+}
+
+// Example on how to update gauge
+// gaugeLag.WithLabelValues("foo_bar", "gid_12", "localhost_9092").Set(123)
+// gaugeLag.With(prometheus.Labels{"type": "delete", "user": "alice"}).Set(344)
+func updateGauge(gauge *prometheus.GaugeVec, csvEntries []csvEntry, lagEntries [][]lagEntry) error {
+	for i, ce := range csvEntries {
+		for _, le := range lagEntries[i] {
+			gauge.With(prometheus.Labels{
+				"topic":     ce.topic,
+				"groupid":   ce.groupId,
+				"host":      ce.url,
+				"partition": fmt.Sprint(le.partition),
+			}).Set(float64(le.lag))
+		}
+	}
+	return nil
+}
+
+func getAllLags(listCsvEntries []csvEntry) ([][]lagEntry, error) {
+	lagEntriesPerCsvRow := [][]lagEntry{}
+	for _, ce := range listCsvEntries {
+		listLags, err := getLag(ce.url, ce.topic, ce.groupId)
+		if err != nil {
+			log.Printf("Error processing csv entry %v. Continuing with next one", ce)
+			return nil, err
+		}
+		lagEntriesPerCsvRow = append(lagEntriesPerCsvRow, listLags)
+	}
+	return lagEntriesPerCsvRow, nil
 }
 
 func readCsv() ([]csvEntry, error) {
