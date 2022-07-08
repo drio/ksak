@@ -3,43 +3,33 @@ package ksak
 import (
 	"flag"
 	"fmt"
-
-	"github.com/segmentio/kafka-go"
 )
 
-type ListGroupsCommand struct {
+type ListTopicsCommand struct {
 	fs *flag.FlagSet
 
 	name string
-	url  string
 }
 
-func NewListGroupsCommand() *ListGroupsCommand {
-	gc := &ListGroupsCommand{
+func NewListTopicsCommand() *ListTopicsCommand {
+	gc := &ListTopicsCommand{
 		fs: flag.NewFlagSet("list-groups", flag.ContinueOnError),
 	}
-
-	gc.fs.StringVar(&gc.url, "url", "", "broker url")
 
 	return gc
 }
 
-func (l *ListGroupsCommand) Name() string {
+func (l *ListTopicsCommand) Name() string {
 	return l.fs.Name()
 }
 
-func (l *ListGroupsCommand) Init(args []string) error {
+func (l *ListTopicsCommand) Init(args []string) error {
 	return l.fs.Parse(args)
 }
 
-func (l *ListGroupsCommand) Run() error {
-	conn, err := kafka.Dial("tcp", l.url)
-	if err != nil {
-		panic(err.Error())
-	}
-	defer conn.Close()
-
-	partitions, err := conn.ReadPartitions()
+func (l *ListTopicsCommand) Run(kd *KafkaDetails) error {
+	kd.Init().SetPlainConn()
+	partitions, err := kd.Conn.ReadPartitions()
 	if err != nil {
 		panic(err.Error())
 	}

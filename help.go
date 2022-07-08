@@ -49,8 +49,8 @@ func PrintHelp() {
   [lag]: show lag for topic and group-id.
     $ ksak lag --topic=foo-bar --url=localhost:9092 --group-id=drio1
 
-  [list-groups]: list groups in kafka server.
-    $ ksak list-groups
+  [list-topics]: list topics in kafka server.
+    $ ksak list-topics
 
   [exporter]: start a prometheus exporter that exposes lag related metrics.
     $ ksak exporter --input=%s --port=%d --sleep=%d
