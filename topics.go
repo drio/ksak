@@ -13,7 +13,7 @@ type ListTopicsCommand struct {
 
 func NewListTopicsCommand() *ListTopicsCommand {
 	gc := &ListTopicsCommand{
-		fs: flag.NewFlagSet("list-groups", flag.ContinueOnError),
+		fs: flag.NewFlagSet("list-topics", flag.ContinueOnError),
 	}
 
 	return gc
@@ -28,7 +28,7 @@ func (l *ListTopicsCommand) Init(args []string) error {
 }
 
 func (l *ListTopicsCommand) Run(kd *KafkaDetails) error {
-	kd.Init().SetPlainConn()
+	kd.SetPlainConn()
 	partitions, err := kd.Conn.ReadPartitions()
 	if err != nil {
 		panic(err.Error())
