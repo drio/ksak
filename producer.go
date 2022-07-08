@@ -28,8 +28,8 @@ func NewProduceCommand() *ProduceCommand {
 	}
 
 	gc.fs.StringVar(&gc.topic, "topic", "", "kafka topic")
-	gc.fs.IntVar(&gc.partition, "partition", produceDefaultsPartition, "kafka broker url")
-	gc.fs.IntVar(&gc.sleepBy, "sleep", produceDefaultsPartition, "Number of seconds to sleep between production")
+	gc.fs.IntVar(&gc.partition, "partition", produceDefaultsPartition, "kafka partition")
+	gc.fs.IntVar(&gc.sleepBy, "sleep", produceDefaultsSleepBy, "Number of seconds to sleep between production")
 
 	return gc
 }
@@ -61,7 +61,6 @@ func (p *ProduceCommand) Run(kd *KafkaDetails) error {
 
 func (p *ProduceCommand) SendLoop(conn *kafka.Conn, sleepSecs time.Duration) {
 	for {
-		// FIXME: command option
 		r := fmt.Sprintf("%d", GenRandomInt(1000))
 		log.Printf("Sending %s", r)
 		_, err := conn.WriteMessages(

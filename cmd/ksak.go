@@ -4,6 +4,7 @@ import (
 	"drio/ksak"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -25,10 +26,10 @@ func root(args []string) error {
 
 	cmds := []Runner{
 		ksak.NewProduceCommand(),
-		//ksak.NewConsumeCommand(),
+		ksak.NewConsumeCommand(),
 		//ksak.NewListGroupsCommand(),
 		//ksak.NewLagCommand(),
-		//ksak.NewHelpCommand(),
+		ksak.NewHelpCommand(),
 		//ksak.NewExporterCommand(),
 	}
 
@@ -40,8 +41,12 @@ func root(args []string) error {
 	}
 	kd.Init()
 	defer func() {
+		log.Printf("Closing kafka connection ")
 		if kd.Conn != nil {
 			kd.Conn.Close()
+		}
+		if kd.Reader != nil {
+			kd.Reader.Close()
 		}
 	}()
 

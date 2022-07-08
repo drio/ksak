@@ -27,7 +27,7 @@ func (l *HelpCommand) Init(args []string) error {
 	return l.fs.Parse(args)
 }
 
-func (l *HelpCommand) Run() error {
+func (l *HelpCommand) Run(kd *KafkaDetails) error {
 	PrintHelp()
 	return nil
 }
