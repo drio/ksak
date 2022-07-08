@@ -1,7 +1,6 @@
 package ksak
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -12,15 +11,15 @@ import (
 )
 
 const produceDefaultsPartition = 0
+const produceDefaultsSleepBy = 5
 
 type ProduceCommand struct {
 	fs *flag.FlagSet
 
 	name      string
 	topic     string
-	url       string
 	partition int
-	conn      *kafka.Conn
+	sleepBy   int
 }
 
 func NewProduceCommand() *ProduceCommand {
@@ -29,8 +28,8 @@ func NewProduceCommand() *ProduceCommand {
 	}
 
 	gc.fs.StringVar(&gc.topic, "topic", "", "kafka topic")
-	gc.fs.StringVar(&gc.url, "url", "", "kafka broker url")
 	gc.fs.IntVar(&gc.partition, "partition", produceDefaultsPartition, "kafka broker url")
+	gc.fs.IntVar(&gc.sleepBy, "sleep", produceDefaultsPartition, "Number of seconds to sleep between production")
 
 	return gc
 }
@@ -43,47 +42,29 @@ func (p *ProduceCommand) Init(args []string) error {
 	return p.fs.Parse(args)
 }
 
-func (p *ProduceCommand) Run() error {
+func (p *ProduceCommand) Run(kd *KafkaDetails) error {
 	if p.topic == "" {
 		fmt.Println("No kafka topic name provided.")
 		os.Exit(2)
 	}
 
-	if p.url == "" {
-		fmt.Println("No kafka broker url provided")
-		os.Exit(2)
+	if p.sleepBy == 0 {
+		log.Printf("No sleep provided, defaulting to %d", produceDefaultsSleepBy)
+		p.sleepBy = produceDefaultsSleepBy
 	}
 
-	SetupCloseHandler()
-	p.Connect()
-	defer func() {
-		if err := p.conn.Close(); err != nil {
-			log.Fatal("failed to close writer:", err)
-		}
-	}()
+	kd.SetConn(p.topic, p.partition)
 
-	var sleepBy time.Duration
-	// FIXME: cmd option
-	sleepBy = 2
-	p.SendLoop(sleepBy)
+	p.SendLoop(kd.Conn, time.Duration(p.sleepBy))
 	return nil
 }
 
-func (p *ProduceCommand) Connect() {
-	conn, err := kafka.DialLeader(context.Background(), "tcp", p.url, p.topic, p.partition)
-	if err != nil {
-		log.Fatal("failed to dial leader:", err)
-	}
-	//conn.SetWriteDeadline(time.Now().Add(3 * time.Second))
-	p.conn = conn
-}
-
-func (p *ProduceCommand) SendLoop(sleepSecs time.Duration) {
+func (p *ProduceCommand) SendLoop(conn *kafka.Conn, sleepSecs time.Duration) {
 	for {
 		// FIXME: command option
 		r := fmt.Sprintf("%d", GenRandomInt(1000))
 		log.Printf("Sending %s", r)
-		_, err := p.conn.WriteMessages(
+		_, err := conn.WriteMessages(
 			kafka.Message{Value: []byte(r)},
 		)
 		if err != nil {

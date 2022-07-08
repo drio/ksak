@@ -14,7 +14,7 @@ func help(msg string) {
 
 type Runner interface {
 	Init([]string) error
-	Run() error
+	Run(*ksak.KafkaDetails) error
 	Name() string
 }
 
@@ -25,19 +25,32 @@ func root(args []string) error {
 
 	cmds := []Runner{
 		ksak.NewProduceCommand(),
-		ksak.NewConsumeCommand(),
-		ksak.NewListGroupsCommand(),
-		ksak.NewLagCommand(),
-		ksak.NewHelpCommand(),
-		ksak.NewExporterCommand(),
+		//ksak.NewConsumeCommand(),
+		//ksak.NewListGroupsCommand(),
+		//ksak.NewLagCommand(),
+		//ksak.NewHelpCommand(),
+		//ksak.NewExporterCommand(),
 	}
+
+	ksak.SetupCloseHandler()
+	kd := &ksak.KafkaDetails{
+		Url:      "localhost:9092",
+		Username: "",
+		Password: "",
+	}
+	kd.Init()
+	defer func() {
+		if kd.Conn != nil {
+			kd.Conn.Close()
+		}
+	}()
 
 	subcommand := os.Args[1]
 
 	for _, cmd := range cmds {
 		if cmd.Name() == subcommand {
 			cmd.Init(os.Args[2:])
-			return cmd.Run()
+			return cmd.Run(kd)
 		}
 	}
 
