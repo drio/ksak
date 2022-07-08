@@ -67,6 +67,15 @@ func (a *KafkaDetails) SetClient() *KafkaDetails {
 		Dial:     a.Dialer.DialFunc,
 		Resolver: kafka.NewBrokerResolver(nil),
 	}
+
+	if a.Username != "" && a.Password != "" {
+		transport.SASL = plain.Mechanism{
+			Username: a.Username,
+			Password: a.Password,
+		}
+		transport.TLS = &tls.Config{}
+	}
+
 	a.Client = &kafka.Client{
 		Addr:      kafka.TCP(a.Url),
 		Timeout:   5 * time.Second,

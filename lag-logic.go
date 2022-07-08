@@ -5,10 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net"
 	"sort"
-	"sync"
-	"time"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -22,18 +19,7 @@ type lagEntry struct {
 	groupId   string
 }
 
-func getPartitionsForTopic(url string, topic string) ([]int, error) {
-	conn, err := kafka.DialLeader(context.Background(), "tcp", url, topic, 0)
-	if err != nil {
-		log.Fatal("failed to dial leader:", err)
-	}
-
-	if err != nil {
-		log.Printf("error connecting to Kafka url: %v, error is: %v\n", url, err)
-		return nil, err
-	}
-	defer conn.Close()
-
+func getPartitionsForTopic(topic string, conn *kafka.Conn) ([]int, error) {
 	partitions, err := conn.ReadPartitions()
 	if err != nil {
 		log.Printf("error reading partitions. error is: %v\n", err)
@@ -48,30 +34,11 @@ func getPartitionsForTopic(url string, topic string) ([]int, error) {
 	return topicPartitions, nil
 }
 
-func newClient(addr net.Addr) (*kafka.Client, func()) {
-	transport := &kafka.Transport{
-		Dial:     (&net.Dialer{}).DialContext,
-		Resolver: kafka.NewBrokerResolver(nil),
-	}
-	client := &kafka.Client{
-		Addr:      addr,
-		Timeout:   5 * time.Second,
-		Transport: transport,
-	}
-	type ConnWaitGroup struct {
-		sync.WaitGroup
-	}
-	conns := &ConnWaitGroup{}
-	return client, func() { transport.CloseIdleConnections(); conns.Wait() }
-}
-
-func getLag(url, topic, groupid string) ([]lagEntry, error) {
-	partitions, err := getPartitionsForTopic(url, topic)
+func getLag(topic, groupid string, client *kafka.Client, conn *kafka.Conn) ([]lagEntry, error) {
+	partitions, err := getPartitionsForTopic(topic, conn)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("error getting partitions for topic: %v, error is: %v\n", topic, err))
 	}
-	client, shutdown := newClient(kafka.TCP(url))
-	defer shutdown()
 
 	// first get "Committed"
 	offsets, err := client.OffsetFetch(context.Background(), &kafka.OffsetFetchRequest{
@@ -106,11 +73,11 @@ func getLag(url, topic, groupid string) ([]lagEntry, error) {
 		},
 	})
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("error listing offsets for topic: %v, error is: %v\n", url, err))
+		return nil, errors.New(fmt.Sprintf("error listing offsets for topic: %v, error is: %v\n", topic, err))
 	}
 	partitionOffsets, ok := res.Topics[topic]
 	if !ok {
-		return nil, errors.New(fmt.Sprintf("error getting partition offsets for topic: %v, error is: %v\n", url, err))
+		return nil, errors.New(fmt.Sprintf("error getting partition offsets for topic: %v, error is: %v\n", topic, err))
 	}
 
 	// combine committed and last into final

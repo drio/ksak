@@ -28,7 +28,7 @@ func root(args []string) error {
 		ksak.NewProduceCommand(),
 		ksak.NewConsumeCommand(),
 		ksak.NewListTopicsCommand(),
-		//ksak.NewLagCommand(),
+		ksak.NewLagCommand(),
 		ksak.NewHelpCommand(),
 		//ksak.NewExporterCommand(),
 	}
@@ -43,13 +43,14 @@ func root(args []string) error {
 
 	kd.Init()
 	defer func() {
-		log.Printf("Closing kafka connection ")
+		log.Printf("Closing kafka connection\n")
 		if kd.Conn != nil {
 			kd.Conn.Close()
 		}
 		if kd.Reader != nil {
 			kd.Reader.Close()
 		}
+		// TODO: shutdown Client
 	}()
 
 	subcommand := os.Args[1]

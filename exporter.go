@@ -4,14 +4,10 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
-	"log"
-	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const exporterDefaultInput = "/dev/stdin"
@@ -52,6 +48,7 @@ func (l *ExporterCommand) Init(args []string) error {
 	return l.fs.Parse(args)
 }
 
+/*
 func (l *ExporterCommand) Run() error {
 	gaugeLag := registerGauge()
 
@@ -87,6 +84,7 @@ func (l *ExporterCommand) Run() error {
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", l.port), nil))
 	return nil
 }
+*/
 
 func registerGauge() *prometheus.GaugeVec {
 	gaugeLag := prometheus.NewGaugeVec(
@@ -128,10 +126,11 @@ func updateGauge(gauge *prometheus.GaugeVec, csvEntries []csvEntry, lagEntries [
 	return nil
 }
 
+/*
 func getAllLags(listCsvEntries []csvEntry) ([][]lagEntry, error) {
 	lagEntriesPerCsvRow := [][]lagEntry{}
 	for _, ce := range listCsvEntries {
-		listLags, err := getLag(ce.url, ce.topic, ce.groupId)
+		listLags, err := getLag(ce.topic, ce.groupId)
 		if err != nil {
 			log.Printf("Error processing csv entry %v. Continuing with next one", ce)
 			return nil, err
@@ -140,6 +139,7 @@ func getAllLags(listCsvEntries []csvEntry) ([][]lagEntry, error) {
 	}
 	return lagEntriesPerCsvRow, nil
 }
+*/
 
 func readCsv(fName string) ([]csvEntry, error) {
 	file, err := os.Open(fName)
