@@ -7,18 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/segmentio/kafka-go"
 )
-
-type App struct {
-	Topic     string
-	Url       string
-	Partition int
-	GroupId   string
-	Conn      *kafka.Conn
-	Reader    *kafka.Reader
-}
 
 func SetupCloseHandler() {
 	c := make(chan os.Signal)
