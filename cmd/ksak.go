@@ -34,11 +34,13 @@ func root(args []string) error {
 	}
 
 	ksak.SetupCloseHandler()
+	log.Printf("url: %s user: %s ", os.Getenv("KASK_URL"), os.Getenv("KASK_USERNAME"))
 	kd := &ksak.KafkaDetails{
-		Url:      "localhost:9092",
-		Username: "",
-		Password: "",
+		Url:      os.Getenv("KASK_URL"),
+		Username: os.Getenv("KASK_USERNAME"),
+		Password: os.Getenv("KASK_PASSWORD"),
 	}
+
 	kd.Init()
 	defer func() {
 		log.Printf("Closing kafka connection ")

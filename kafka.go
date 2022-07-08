@@ -68,7 +68,7 @@ func (a *KafkaDetails) SetClient() *KafkaDetails {
 		Resolver: kafka.NewBrokerResolver(nil),
 	}
 	a.Client = &kafka.Client{
-		Addr:      kafka.TCP("localhost:9092"),
+		Addr:      kafka.TCP(a.Url),
 		Timeout:   5 * time.Second,
 		Transport: transport,
 	}
