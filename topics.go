@@ -34,13 +34,13 @@ func (l *ListTopicsCommand) Run(kd *KafkaDetails) error {
 		panic(err.Error())
 	}
 
-	m := map[string]struct{}{}
-
+	//m := map[string]kafka.Partition
 	for _, p := range partitions {
-		m[p.Topic] = struct{}{}
-	}
-	for k := range m {
-		fmt.Println(k)
+		fmt.Printf("%d:%s %d[ ", p.ID, p.Topic, p.Leader.ID)
+		for _, r := range p.Replicas {
+			fmt.Printf("%d ", r.ID)
+		}
+		fmt.Printf("]\n")
 	}
 
 	return nil
