@@ -30,7 +30,7 @@ func root(args []string) error {
 		ksak.NewListTopicsCommand(),
 		ksak.NewLagCommand(),
 		ksak.NewHelpCommand(),
-		//ksak.NewExporterCommand(),
+		ksak.NewExporterCommand(),
 	}
 
 	ksak.SetupCloseHandler()
@@ -57,7 +57,10 @@ func root(args []string) error {
 
 	for _, cmd := range cmds {
 		if cmd.Name() == subcommand {
-			cmd.Init(os.Args[2:])
+			err := cmd.Init(os.Args[2:])
+			if err != nil {
+				return fmt.Errorf("%s", err)
+			}
 			return cmd.Run(kd)
 		}
 	}
