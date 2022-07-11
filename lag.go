@@ -51,6 +51,6 @@ func (l *LagCommand) Run(kd *KafkaDetails) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%+v\n", les[0])
+	fmt.Printf("%d\n", les[0].lag)
 	return nil
 }
