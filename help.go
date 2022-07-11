@@ -53,12 +53,9 @@ func PrintHelp() {
     $ ksak partitions
     $ ksak partitions --verbose
 
-  [exporter]: start a prometheus exporter that exposes lag related metrics.
-    $ ksak exporter --input=%s --port=%d --sleep=%d
-    csv input format:
-    kafka broker url, kafka topic,  kafka group id
-    example:
-    localhost:9092, foo-bar-topic, group-id1
+  [exporter]: starts a prometheus exporter that exposes lag related metrics.
+              csv input format: kafka broker url, kafka topic,  kafka group id.
+    $ echo "localhost:9092, foo-bar-topic, group-id1" | ksak exporter
 
-`, exporterDefaultInput, exporterDefaultPort, exporterDefaultSleep)
+`)
 }
