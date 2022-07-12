@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-const version = "0.0.1"
+const version = "0.0.2"
 
 type HelpCommand struct {
 	fs *flag.FlagSet
