@@ -43,12 +43,12 @@ func (c *ConsumeCommand) Init(args []string) error {
 
 func (c *ConsumeCommand) Run(kd *KafkaDetails) error {
 	if c.topic == "" {
-		fmt.Println("No kafka topic name provided.")
+		fmt.Println("No kafka <topic> name provided.")
 		os.Exit(2)
 	}
 
 	if c.groupId == "" {
-		fmt.Println("No group id provided.")
+		fmt.Println("No <group-id> provided.")
 		os.Exit(2)
 	}
 

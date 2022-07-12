@@ -75,7 +75,7 @@ func (l *ExporterCommand) Run(kd *KafkaDetails) error {
 			if err != nil {
 				log.Printf("Error getting lags: %s", err)
 			} else {
-				updateGauge(gaugeLag, listCsvEntries, listLags)
+				updateGauge(kd.Url, gaugeLag, listCsvEntries, listLags)
 			}
 			log.Printf("Sleeping update gauge goroutine for %d seconds", l.sleepTime)
 			time.Sleep(time.Duration(l.sleepTime) * time.Second)
@@ -97,7 +97,7 @@ func registerGauge() *prometheus.GaugeVec {
 		[]string{
 			"topic",
 			"groupid",
-			"host",
+			"url",
 			"partition",
 		},
 	)
@@ -106,7 +106,6 @@ func registerGauge() *prometheus.GaugeVec {
 }
 
 type csvEntry struct {
-	url     string
 	topic   string
 	groupId string
 }
@@ -114,13 +113,13 @@ type csvEntry struct {
 // Example on how to update gauge
 // gaugeLag.WithLabelValues("foo_bar", "gid_12", "localhost_9092").Set(123)
 // gaugeLag.With(prometheus.Labels{"type": "delete", "user": "alice"}).Set(344)
-func updateGauge(gauge *prometheus.GaugeVec, csvEntries []csvEntry, lagEntries [][]lagEntry) error {
+func updateGauge(url string, gauge *prometheus.GaugeVec, csvEntries []csvEntry, lagEntries [][]lagEntry) error {
 	for i, ce := range csvEntries {
 		for _, le := range lagEntries[i] {
 			gauge.With(prometheus.Labels{
 				"topic":     ce.topic,
 				"groupid":   ce.groupId,
-				"host":      ce.url,
+				"url":       url,
 				"partition": fmt.Sprint(le.partition),
 			}).Set(float64(le.lag))
 		}
@@ -163,9 +162,8 @@ func readCsv(fName string) ([]csvEntry, error) {
 	listEntries := []csvEntry{}
 	for _, entry := range records {
 		listEntries = append(listEntries, csvEntry{
-			url:     strings.TrimSpace(entry[0]),
-			topic:   strings.TrimSpace(entry[1]),
-			groupId: strings.TrimSpace(entry[2]),
+			topic:   strings.TrimSpace(entry[0]),
+			groupId: strings.TrimSpace(entry[1]),
 		})
 	}
 

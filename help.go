@@ -36,9 +36,8 @@ func (l *HelpCommand) Run(kd *KafkaDetails) error {
 
 func PrintHelp() {
 	fmt.Printf(`🔪 ksak (Kafka Swiss Army Knife) v%s
-
   Usage:
-    ksak <command> [flags]
+    $ ksak <command> [flags]
 
   [help]: show help.
 
@@ -49,15 +48,20 @@ func PrintHelp() {
     $ ksak consume --topic=test-topic -group-id=a-group-id
 
   [lag]: show lag for topic and group-id.
-    $ ksak lag --topic=foo-bar --url=localhost:9092 --group-id=drio1
+    $ ksak lag --topic=foo-bar --group-id=drio1
 
   [partitions]: show partitions with where replication != ISR
     $ ksak partitions
     $ ksak partitions --verbose
 
   [exporter]: starts a prometheus exporter that exposes lag related metrics.
-              csv input format: kafka broker url, kafka topic,  kafka group id.
-    $ echo "localhost:9092, foo-bar-topic, group-id1" | ksak exporter
+              csv input format: kafka topic, kafka group id
+    $ echo "foo-bar-topic, group-id1" | ksak exporter
+
+  Environment variables: (kafka server credentials)
+    - KASK_URL
+    - KASK_USERNAME
+    - KASK_PASSWORD
 
 `, version)
 }
