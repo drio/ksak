@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+const version = "0.0.1"
+
 type HelpCommand struct {
 	fs *flag.FlagSet
 
@@ -33,7 +35,7 @@ func (l *HelpCommand) Run(kd *KafkaDetails) error {
 }
 
 func PrintHelp() {
-	fmt.Printf(`🔪 ksak (Kafka Swiss Army Knife)
+	fmt.Printf(`🔪 ksak (Kafka Swiss Army Knife) v%s
 
   Usage:
     ksak <command> [flags]
@@ -57,5 +59,5 @@ func PrintHelp() {
               csv input format: kafka broker url, kafka topic,  kafka group id.
     $ echo "localhost:9092, foo-bar-topic, group-id1" | ksak exporter
 
-`)
+`, version)
 }
