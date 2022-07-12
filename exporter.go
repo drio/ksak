@@ -131,6 +131,12 @@ func updateGauge(gauge *prometheus.GaugeVec, csvEntries []csvEntry, lagEntries [
 func getAllLags(listCsvEntries []csvEntry, kd *KafkaDetails) ([][]lagEntry, error) {
 	lagEntriesPerCsvRow := [][]lagEntry{}
 	kd.SetPlainConn().SetClient()
+	// TODO:
+	// We are not considering that the current semantics allow for multiple kafka servers.
+	// That means we may need multiople connections, which means multiple login/passwords.
+	// What we want to do is only work off of one server (env variable provided) and then we
+	// can have as many topics/group as we want.
+	// Better idea: just grab all the lags for all the topics/groups ids. Ditch the csv/inputfile
 	for _, ce := range listCsvEntries {
 		listLags, err := getLag(ce.topic, ce.groupId, kd.Client, kd.Conn)
 		if err != nil {
