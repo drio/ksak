@@ -1,5 +1,8 @@
 ## ksak: useful kafka tasks 
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+
 This tool implements different tasks that I use regularly when working against a 
 kafka server. See the help for more details on those tasks: produce, consume, check
 for lag.
