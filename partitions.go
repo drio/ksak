@@ -39,11 +39,11 @@ func (l *PartitionsCommand) Run(kd *KafkaDetails) error {
 	if l.verbose {
 		//m := map[string]kafka.Partition
 		for _, p := range partitions {
-			fmt.Printf("%d:%s %d replicas=[ ", p.ID, p.Topic, p.Leader.ID)
+			fmt.Printf("id=%d topic=%s lider_id=%d replicas=[ ", p.ID, p.Topic, p.Leader.ID)
 			for _, r := range p.Replicas {
 				fmt.Printf("%d ", r.ID)
 			}
-			fmt.Printf("] ISR=[ ")
+			fmt.Printf(" ] ISR=[ ")
 			for _, r := range p.Isr {
 				fmt.Printf("%d ", r.ID)
 			}
