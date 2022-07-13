@@ -33,18 +33,28 @@ func root(args []string) error {
 		ksak.NewExporterCommand(),
 	}
 
-	log.Printf("url: [%s] user: [%s] ", os.Getenv("KSAK_URL"), os.Getenv("KASK_USERNAME"))
-
 	url, found := os.LookupEnv("KSAK_URL")
 	if !found {
 		log.Fatal("KSAK_URL not set")
 	}
 
+	username, found := os.LookupEnv("KSAK_USERNAME")
+	if !found {
+		log.Printf("KSAK_USERNAME not set")
+	}
+
+	password, found := os.LookupEnv("KSAK_PASSWORD")
+	if !found {
+		log.Printf("KSAK_PASSWORD not set")
+	}
+
+	log.Printf("url: [%s] user: [%s] ", url, username)
+
 	ksak.SetupCloseHandler()
 	kd := &ksak.KafkaDetails{
 		Url:      url,
-		Username: os.Getenv("KSAK_USERNAME"),
-		Password: os.Getenv("KSAK_PASSWORD"),
+		Username: username,
+		Password: password,
 	}
 
 	kd.Init()
