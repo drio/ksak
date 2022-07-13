@@ -59,9 +59,9 @@ func PrintHelp() {
     $ echo "foo-bar-topic, group-id1" | ksak exporter
 
   Environment variables: (kafka server credentials)
-    - KASK_URL
-    - KASK_USERNAME
-    - KASK_PASSWORD
+    - KSAK_URL
+    - KSAK_USERNAME
+    - KSAK_PASSWORD
 
 `, version)
 }
