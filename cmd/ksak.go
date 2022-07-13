@@ -35,7 +35,7 @@ func root(args []string) error {
 
 	log.Printf("url: [%s] user: [%s] ", os.Getenv("KASK_URL"), os.Getenv("KASK_USERNAME"))
 
-	url, found := os.LookupEnv("KASK_URL")
+	url, found := os.LookupEnv("KSAK_URL")
 	if !found {
 		log.Fatal("KSAK_URL not set")
 	}
